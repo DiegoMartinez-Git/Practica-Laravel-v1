@@ -44,10 +44,10 @@ En el archivo `laradock/nginx/sites/default.conf` se cambió la directiva `serve
 ```
 
 ### 6. Configurar el `.env` de Laravel
-Por defecto, Laravel 11 usa SQLite. Lo cambiamos para que se conectase al contenedor MySQL de Laradock. En tu archivo `.env` en la raíz del proyecto se configuró:
+Por defecto, Laravel 11 usa SQLite. Lo cambiamos para que se conectase al contenedor MariaDB de Laradock. En tu archivo `.env` en la raíz del proyecto se configuró:
 ```env
 DB_CONNECTION=mysql
-DB_HOST=mysql
+DB_HOST=mariadb
 DB_PORT=3306
 DB_DATABASE=pruebalaravel
 DB_USERNAME=pruebalaravel
@@ -55,13 +55,13 @@ DB_PASSWORD=pruebalaravel
 
 REDIS_HOST=redis
 ```
-*(Nota: "mysql" y "redis" son los nombres de los contenedores dentro de la red de Laradock).*
+*(Nota: "mariadb" y "redis" son los nombres de los contenedores dentro de la red de Laradock).*
 
-### 7. Inicializar la Base de Datos en MySQL
-Como usaste credenciales personalizadas (`pruebalaravel` en lugar de las por defecto de Laradock), tuvimos que entrar al contenedor de MySQL recién creado y ejecutar la consulta SQL manualmente para crear tanto la base de datos como el usuario:
+### 7. Inicializar la Base de Datos en MariaDB
+Como usaste credenciales personalizadas (`pruebalaravel` en lugar de las por defecto de Laradock), tuvimos que entrar al contenedor de MariaDB recién creado y ejecutar la consulta SQL manualmente para crear tanto la base de datos como el usuario:
 ```bash
 # Se ejecutó esto desde la carpeta laradock:
-docker compose exec mysql mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS pruebalaravel; CREATE USER IF NOT EXISTS 'pruebalaravel'@'%' IDENTIFIED BY 'pruebalaravel'; GRANT ALL PRIVILEGES ON pruebalaravel.* TO 'pruebalaravel'@'%'; FLUSH PRIVILEGES;"
+docker compose exec mariadb mariadb -u root -proot -e "CREATE DATABASE IF NOT EXISTS pruebalaravel; CREATE USER IF NOT EXISTS 'pruebalaravel'@'%' IDENTIFIED BY 'pruebalaravel'; GRANT ALL PRIVILEGES ON pruebalaravel.* TO 'pruebalaravel'@'%'; FLUSH PRIVILEGES;"
 ```
 
 ### 8. Ejecutar las Migraciones de Laravel
@@ -87,7 +87,7 @@ Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar e
    Abre una terminal, sitúate en tu proyecto y entra en la carpeta `laradock`:
    ```bash
    cd Practica-Laravel-v1/laradock
-   docker compose up -d nginx mysql
+   docker compose up -d nginx mariadb
    ```
 
 3. **Ejecutar comandos en Workspace**
@@ -106,7 +106,7 @@ Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar e
 
 Si necesitas ver o administrar la base de datos visualmente, Laradock incluye **phpMyAdmin**.
 
-1. **Enciende el contenedor de phpMyAdmin** (por defecto no se enciende solo con Nginx y MySQL):
+1. **Enciende el contenedor de phpMyAdmin** (por defecto no se enciende solo con Nginx y MariaDB):
    ```bash
    cd Practica-Laravel-v1/laradock
    docker compose up -d phpmyadmin
@@ -116,6 +116,6 @@ Si necesitas ver o administrar la base de datos visualmente, Laradock incluye **
    [http://localhost:8081](http://localhost:8081)
 
 3. **Inicia sesión** con las credenciales que configuramos:
-   - **Servidor:** `mysql` *(¡Muy importante! No pongas localhost, pon la palabra mysql)*
+   - **Servidor:** `mariadb` *(¡Muy importante! No pongas localhost, pon la palabra mariadb)*
    - **Usuario:** `pruebalaravel` (o `root` si quieres ver todas las bases de datos)
    - **Contraseña:** `pruebalaravel` (o `root`)
