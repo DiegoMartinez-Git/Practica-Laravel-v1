@@ -1,58 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Práctica Laravel v1 con Laradock
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este repositorio contiene un proyecto de **Laravel 11** configurado desde cero junto a **Laradock** como entorno de contenedores Docker. A continuación se detalla paso a paso todo el proceso que se ha llevado a cabo para inicializar este entorno, de forma que quede documentado para futuras referencias.
 
-## About Laravel
+## 🛠 Pasos de Configuración Inicial (Historial de Setup)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### 1. Clonar el repositorio
+El primer paso consistió en traernos el repositorio vacío de GitHub a nuestra máquina local:
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone git@github.com:DiegoMartinez-Git/Practica-Laravel-v1.git
+cd Practica-Laravel-v1
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Inicializar el Proyecto Laravel
+Dado que la carpeta ya contenía los archivos de Git (`.git`), Composer no permitía usar `create-project` directamente. Por lo tanto, se creó en una carpeta temporal y luego se movieron los archivos a nuestro repositorio:
+```bash
+composer create-project laravel/laravel tmp_app
+cp -a tmp_app/. ./
+rm -rf tmp_app
+```
 
-## Contributing
+### 3. Añadir Laradock como Submódulo
+Laradock es el entorno Docker que nos proporciona Nginx, MySQL, PHP, Workspace, etc. Se añade como submódulo para mantenerlo enlazado al proyecto oficial sin mezclarlo con el código de nuestra app.
+```bash
+git submodule add https://github.com/laradock/laradock.git
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 4. Configurar el Entorno de Laradock
+Teníamos que copiar el archivo `.env.example` al `.env` que utilizará Docker Compose:
+```bash
+cd laradock
+cp .env.example .env
+```
+> **Importante (Evitar Colisiones):** Como en la máquina ya existía otro proyecto llamado "laradock" corriendo, Docker agrupaba los contenedores y usaba la configuración equivocada. Para aislar *este* proyecto, se editó el archivo `laradock/.env` y se cambió el nombre del proyecto:
+> ```env
+> COMPOSE_PROJECT_NAME=practica_laravel_v1
+> ```
 
-## Code of Conduct
+### 5. Configurar el Dominio Local en Nginx (Laradock)
+Para que nuestra aplicación responda al dominio `http://pruebalaravel.com`, se modificó la configuración por defecto de Nginx de Laradock.
+En el archivo `laradock/nginx/sites/default.conf` se cambió la directiva `server_name`:
+```nginx
+    server_name pruebalaravel.com localhost;
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 6. Configurar el `.env` de Laravel
+Por defecto, Laravel 11 usa SQLite. Lo cambiamos para que se conectase al contenedor MySQL de Laradock. En tu archivo `.env` en la raíz del proyecto se configuró:
+```env
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=pruebalaravel
+DB_USERNAME=pruebalaravel
+DB_PASSWORD=pruebalaravel
 
-## Security Vulnerabilities
+REDIS_HOST=redis
+```
+*(Nota: "mysql" y "redis" son los nombres de los contenedores dentro de la red de Laradock).*
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 7. Inicializar la Base de Datos en MySQL
+Como usaste credenciales personalizadas (`pruebalaravel` en lugar de las por defecto de Laradock), tuvimos que entrar al contenedor de MySQL recién creado y ejecutar la consulta SQL manualmente para crear tanto la base de datos como el usuario:
+```bash
+# Se ejecutó esto desde la carpeta laradock:
+docker compose exec mysql mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS pruebalaravel; CREATE USER IF NOT EXISTS 'pruebalaravel'@'%' IDENTIFIED BY 'pruebalaravel'; GRANT ALL PRIVILEGES ON pruebalaravel.* TO 'pruebalaravel'@'%'; FLUSH PRIVILEGES;"
+```
 
-## License
+### 8. Ejecutar las Migraciones de Laravel
+Para crear las tablas base en la nueva base de datos, siempre hay que ejecutar los comandos de `artisan` **desde dentro del contenedor "workspace"**, ya que este contenedor tiene el PHP y las dependencias preparadas:
+```bash
+# Estando en la carpeta laradock
+docker compose exec workspace php artisan migrate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 🚀 Cómo arrancar el proyecto para programar
+
+Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar el servidor:
+
+1. **Asegurar el archivo Hosts (Solo la primera vez)**
+   Tu ordenador necesita saber que `pruebalaravel.com` apunta a ti mismo. Añade la siguiente línea al final de tu archivo `/etc/hosts` ejecutando `sudo nano /etc/hosts`:
+   ```text
+   127.0.0.1   pruebalaravel.com
+   ```
+
+2. **Encender los contenedores**
+   Abre una terminal, sitúate en tu proyecto y entra en la carpeta `laradock`:
+   ```bash
+   cd Practica-Laravel-v1/laradock
+   docker compose up -d nginx mysql
+   ```
+
+3. **Ejecutar comandos en Workspace**
+   Cuando necesites ejecutar `php artisan`, instalar un paquete de `composer` o ejecutar `npm run dev`, debes entrar a la consola del workspace:
+   ```bash
+   docker compose exec workspace bash
+   ```
+   Una vez dentro (el prompt pondrá `laradock@workspace:/var/www$`), podrás ejecutar tus comandos libremente.
+
+4. **Ver el resultado**
+   Abre tu navegador y ve a: [http://pruebalaravel.com](http://pruebalaravel.com)
