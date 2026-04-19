@@ -73,7 +73,7 @@ docker compose exec workspace php artisan migrate
 
 ---
 
-## 🚀 Cómo arrancar el proyecto para programar
+##  Cómo arrancar el proyecto para programar
 
 Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar el servidor:
 
@@ -102,7 +102,7 @@ Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar e
 
 ---
 
-## 🗄️ Cómo acceder a la Base de Datos (phpMyAdmin)
+##  Cómo acceder a la Base de Datos (phpMyAdmin)
 
 Si necesitas ver o administrar la base de datos visualmente, Laradock incluye **phpMyAdmin**.
 
