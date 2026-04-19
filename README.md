@@ -99,3 +99,23 @@ Siempre que quieras trabajar en el proyecto, estos son los pasos para arrancar e
 
 4. **Ver el resultado**
    Abre tu navegador y ve a: [http://pruebalaravel.com](http://pruebalaravel.com)
+
+---
+
+## 🗄️ Cómo acceder a la Base de Datos (phpMyAdmin)
+
+Si necesitas ver o administrar la base de datos visualmente, Laradock incluye **phpMyAdmin**.
+
+1. **Enciende el contenedor de phpMyAdmin** (por defecto no se enciende solo con Nginx y MySQL):
+   ```bash
+   cd Practica-Laravel-v1/laradock
+   docker compose up -d phpmyadmin
+   ```
+
+2. **Abre tu navegador** y entra a:
+   [http://localhost:8081](http://localhost:8081)
+
+3. **Inicia sesión** con las credenciales que configuramos:
+   - **Servidor:** `mysql` *(¡Muy importante! No pongas localhost, pon la palabra mysql)*
+   - **Usuario:** `pruebalaravel` (o `root` si quieres ver todas las bases de datos)
+   - **Contraseña:** `pruebalaravel` (o `root`)
