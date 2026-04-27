@@ -1,7 +1,7 @@
 <div>
     <h1>Crear equipo</h1>
 
-    <form method="POST" action="{{ route('guardar_equipo') }}">
+    <form method="POST" action="{{ route('equipo.store') }}">
         @csrf
 
         <p>

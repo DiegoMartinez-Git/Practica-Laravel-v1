@@ -34,12 +34,7 @@ class Torneo extends Model
     }
     
 
-    /* ! MAL ASI NO SE RELACIONA UNA TABLA N:M CON LA PIVOT  
 
-     public function equipos(): HasMany
-    {
-        return $this->hasMany(Equipo::class,'torneo_id');
-    } */
       public function partidas(): HasMany
     {
         return $this->hasMany(Partida::class);
