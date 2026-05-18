@@ -1,0 +1,146 @@
+erDiagram
+
+    %% ─────────────────────────────────────────────
+    %% ENTIDADES PRINCIPALES (JUEGOS Y TORNEOS)
+    %% ─────────────────────────────────────────────
+
+    VIDEOJUEGOS {
+        bigint id PK
+        varchar titulo UK
+        varchar categoria
+        varchar desarrollador
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TORNEOS {
+        bigint id PK
+        bigint videojuego_id FK
+        varchar nombre
+        datetime fecha_inicio
+        decimal bote_premios
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PARTIDAS {
+        bigint id PK
+        bigint torneo_id FK
+        bigint equipo_id FK "nullable"
+        datetime fecha_programada
+        varchar url_transmision
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% ─────────────────────────────────────────────
+    %% EQUIPOS, SEDES Y USUARIOS
+    %% ─────────────────────────────────────────────
+
+    EQUIPOS {
+        bigint id PK
+        varchar nombre UK
+        varchar url_logo
+        varchar region
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SEDES {
+        bigint id PK
+        bigint equipo_id FK "UK"
+        varchar direccion
+        varchar ciudad
+        varchar pais
+        int metros_cuadrados
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USUARIOS {
+        bigint id PK
+        bigint equipo_id FK "nullable"
+        varchar alias
+        varchar correo UK
+        timestamp correo_verificado_en "nullable"
+        varchar contrasena
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PERFILES {
+        bigint id PK
+        bigint usuario_id FK "UK"
+        varchar ruta_avatar "nullable"
+        varchar usuario_twitter "nullable"
+        text biografia "nullable"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% ─────────────────────────────────────────────
+    %% GAMIFICACIÓN Y PATROCINIOS
+    %% ─────────────────────────────────────────────
+
+    PATROCINADORES {
+        bigint id PK
+        varchar nombre_marca UK
+        varchar sitio_web
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    LOGROS {
+        bigint id PK
+        varchar titulo UK
+        varchar url_icono
+        int puntos_experiencia
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% ─────────────────────────────────────────────
+    %% TABLAS PIVOTE (RELACIONES N:M)
+    %% ─────────────────────────────────────────────
+
+    EQUIPO_TORNEO {
+        bigint equipo_id PK "FK"
+        bigint torneo_id PK "FK"
+        int posicion_siembra
+    }
+
+    PATROCINADOR_EQUIPO {
+        bigint patrocinador_id PK "FK"
+        bigint equipo_id PK "FK"
+        date fin_contrato
+    }
+
+    LOGRO_USUARIO {
+        bigint logro_id PK "FK"
+        bigint usuario_id PK "FK"
+        timestamp obtenido_en
+    }
+
+    %% ─────────────────────────────────────────────
+    %% RELACIONES
+    %% ─────────────────────────────────────────────
+
+    %% Relaciones 1 a 1
+    USUARIOS ||--o| PERFILES : "tiene_perfil"
+    EQUIPOS ||--o| SEDES : "tiene_gaming_house"
+
+    %% Relaciones 1 a N (Muchos a Uno)
+    EQUIPOS ||--o{ USUARIOS : "contrata_jugadores"
+    VIDEOJUEGOS ||--o{ TORNEOS : "organiza"
+    TORNEOS ||--o{ PARTIDAS : "se_divide_en"
+    EQUIPOS o|--o{ PARTIDAS : "gana"
+
+    %% Relaciones N a M (Implementadas a través de sus tablas pivote)
+    TORNEOS ||--o{ EQUIPO_TORNEO : "incluye"
+    EQUIPOS ||--o{ EQUIPO_TORNEO : "participa_en"
+
+    PATROCINADORES ||--o{ PATROCINADOR_EQUIPO : "patrocina"
+    EQUIPOS ||--o{ PATROCINADOR_EQUIPO : "es_patrocinado_por"
+
+    USUARIOS ||--o{ LOGRO_USUARIO : "desbloquea"
+    LOGROS ||--o{ LOGRO_USUARIO : "concedido_a"
